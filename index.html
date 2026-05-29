@@ -52,18 +52,17 @@ TO ADD A VIDEO:
 4. Save the file. Done.
 
 INSTANT AUDIO (no setup needed):
-- The play buttons use your phone's built-in voice first (works offline).
-- If a device has no voice for a language, they fall back automatically to a
-  verified Wikimedia Commons audio clip (the audioFallback URL - already filled in).
-- If both fail, a "hear it on Forvo" link appears. You never configure this.
-- See the "audio diagnostics" panel at the very bottom of the page to check which
-  tier each greeting uses on a given phone (handy on showcase day).
+- Every play button cascades automatically until something plays:
+  device voice -> verified Wikimedia clip -> built-in offline clip -> "hear it on Forvo".
+- So a tap is never silent, even on a phone/PC with no voice for that language
+  (a missing OR listed-but-silent voice falls through to the next source on its own).
+- You never configure any of this.
 
 CITATION (the assessment requires APA citation for any external source):
 - Note the channel name + video title + upload date in your reference list
 - Example: Easy Languages. (2023, March 15). Easy Mandarin 1 - Ni hao [Video].
   YouTube. https://youtube.com/watch?v=...
-- Wikimedia audio clips are credited in the audio diagnostics panel + the readme.
+- Wikimedia audio clips are credited in the readme.
 =========================================================
 -->
 <!DOCTYPE html>
@@ -478,30 +477,6 @@ footer .aoc{
 .country-panel .fifty{ font-size:.9rem; color:var(--charcoal); margin-top:10px; }
 .country-panel .fifty a{ color:var(--mint-deep); font-weight:600; white-space:nowrap; }
 
-/* audio diagnostics */
-.diag{ width:100%; max-width:var(--maxw); margin:0 auto 36px; padding-inline:20px; }
-.diag details{ background:var(--cream-card); border:1px solid #ecd3b0; border-radius:var(--radius-sm); box-shadow:var(--shadow-sm); }
-.diag summary{
-  cursor:pointer; list-style:none; padding:14px 18px; min-height:44px;
-  font-weight:650; color:var(--accent-deep); font-size:.92rem;
-  display:flex; align-items:center; gap:8px;
-}
-.diag summary::-webkit-details-marker{ display:none; }
-.diag summary .muted{ font-weight:400; color:var(--ink-muted); font-size:.82rem; }
-.diag summary .chev{ margin-left:auto; transition:transform .2s ease; }
-.diag details[open] summary .chev{ transform:rotate(180deg); }
-.diag-body{ padding:2px 18px 18px; font-size:.86rem; color:var(--charcoal); }
-.diag-body p{ margin:6px 0; }
-.diag table{ width:100%; border-collapse:collapse; margin:10px 0; }
-.diag th, .diag td{ text-align:left; padding:7px 8px; border-bottom:1px solid #f0dcc0; font-size:.82rem; vertical-align:top; }
-.diag .tier{ font-weight:700; }
-.diag .tier.voice{ color:var(--mint-deep); }
-.diag .tier.file{ color:var(--accent-deep); }
-.diag .tier.forvo{ color:var(--gold-deep); }
-.diag .tier.none{ color:var(--ink-muted); }
-.diag .voices{ max-height:170px; overflow:auto; background:var(--cream-sink); border-radius:10px; padding:8px 12px; font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace; font-size:.74rem; line-height:1.7; }
-.diag .muted{ color:var(--ink-muted); }
-
 /* scroll reveal */
 .reveal{ opacity:0; transform:translateY(22px); transition:opacity .6s ease, transform .6s ease; }
 .reveal.in{ opacity:1; transform:none; }
@@ -562,13 +537,6 @@ footer .aoc{
     </div>
     <div class="stakes-grid" id="stakes"></div>
     <p class="stakes-tie reveal" id="stakes-tie"></p>
-  </section>
-  <!-- AUDIO DIAGNOSTICS (for the team; peers can ignore) -->
-  <section class="diag" aria-label="Audio diagnostics">
-    <details id="diag">
-      <summary>🔧 Audio diagnostics <span class="muted">— for the team, check audio on each phone</span> <span class="chev" aria-hidden="true">&#9662;</span></summary>
-      <div class="diag-body" id="diag-body"></div>
-    </details>
   </section>
 </main>
 
@@ -963,75 +931,91 @@ const TTS_AUDIO = {
     if(activeInd){ activeInd.classList.remove("on"); activeInd = null; }
   }
 
-  // ---- Tier 1 playback ----
-  function speakNow(text, lang, rate, ind, loops){
-    if(!speechOK) return false;
+  // ---- Tier 1 playback (device voice). onFail cascades to the next tier if the
+  // voice errors OR is listed-but-silent (common for hi-IN and cloud voices). ----
+  function speakNow(text, lang, rate, ind, loops, onFail){
+    if(!speechOK){ if(onFail) onFail(); return false; }
     const v = findVoice(lang);
-    let n = 0;
+    let n = 0, started = false, done = false;
+    const fail = () => {
+      if(done || started) return;              // already heard something — don't double up
+      done = true;
+      try{ speechSynthesis.cancel(); }catch(e){}
+      if(onFail) onFail();
+    };
     const once = () => {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = lang; if(v) u.voice = v; u.rate = rate; u.pitch = 1;
-      u.onstart = () => setSpeaking(ind, true);
+      u.onstart = () => { started = true; setSpeaking(ind, true); };
       u.onend   = () => { n++; if(loops && n < loops) setTimeout(once, 900); else setSpeaking(ind, false); };
-      u.onerror = () => setSpeaking(ind, false);
+      u.onerror = () => { setSpeaking(ind, false); fail(); };
       speechSynthesis.speak(u);
     };
     once();
+    setTimeout(fail, 1300);                     // no sound after 1.3s → cascade to next tier
     return true;
   }
 
-  // ---- Tier 2 playback (Wikimedia <audio>) ----
-  function playUrl(url, rate, ind, loops){
-    try{
-      const a = new Audio(url);
-      a.playbackRate = rate || 1;
-      fbAudio = a;
-      let n = 0;
-      a.addEventListener("playing", () => setSpeaking(ind, true));
-      a.addEventListener("ended", () => {
-        n++;
-        if(loops && n < loops){ a.currentTime = 0; setTimeout(()=>{ if(fbAudio===a) a.play().catch(()=>{}); }, 700); }
-        else setSpeaking(ind, false);
-      });
-      a.addEventListener("error", () => setSpeaking(ind, false));
-      const p = a.play();
-      if(p && p.catch) p.catch(() => setSpeaking(ind, false));
-      return true;
-    }catch(e){ return false; }
+  // ---- <audio> playback (Wikimedia clip OR embedded base64). onFail cascades to
+  // the next tier if the clip 404s, can't decode, or playback is rejected. ----
+  function playUrl(url, rate, ind, loops, onFail){
+    let a;
+    try{ a = new Audio(url); }
+    catch(e){ if(onFail) onFail(); return false; }
+    a.playbackRate = rate || 1;
+    fbAudio = a;
+    let n = 0, started = false, done = false;
+    const fail = () => {
+      if(done || started) return;
+      done = true; setSpeaking(ind, false);
+      if(onFail) onFail();
+    };
+    a.addEventListener("playing", () => { started = true; setSpeaking(ind, true); });
+    a.addEventListener("ended", () => {
+      n++;
+      if(loops && n < loops){ a.currentTime = 0; setTimeout(()=>{ if(fbAudio===a) a.play().catch(()=>{}); }, 700); }
+      else setSpeaking(ind, false);
+    });
+    a.addEventListener("error", fail);
+    const p = a.play();
+    if(p && p.catch) p.catch(fail);
+    return true;
   }
 
   // ---- unified player. item: { text, lang, url, ind, mode } ----
-  // mode: 'play' (normal) | 'slow' | 'loop'.  Returns tier used: 'voice'|'file'|'none'
+  // mode: 'play' (normal) | 'slow' | 'loop'.
+  // Tiers cascade on failure: device voice -> recorded clip -> embedded clip -> Forvo.
+  // Each step only fires if the previous one failed to make sound, so a missing or
+  // silent voice (e.g. some hi-IN voices) never leaves a button quietly dead.
   function playAudio(item){
     stopAll();
     const rate  = item.mode === "slow" ? 0.5 : (item.mode === "loop" ? 0.8 : 0.85);
     const loops = item.mode === "loop" ? 3 : 1;
+    const tts   = item.text && TTS_AUDIO[item.text];   // embedded base64 clip, offline-safe
+
+    const tryForvo = () => {
+      if(item.allowForvo && item.text){ window.open(forvoFor(item.text), "sayItRightForvo"); return "forvo"; }
+      setSpeaking(item.ind, false); return "none";
+    };
+    const tryEmbedded = () => {
+      if(tts){ playUrl(tts, item.mode === "slow" ? 0.7 : 1, item.ind, loops, tryForvo); return "embedded"; }
+      return tryForvo();
+    };
+    const tryUrl = () => {
+      if(item.url){ playUrl(item.url, item.mode === "slow" ? 0.6 : 1, item.ind, loops, tryEmbedded); return "file"; }
+      return tryEmbedded();
+    };
+
     if(item.lang && hasVoice(item.lang)){
-      speakNow(item.text, item.lang, rate, item.ind, loops); return "voice";
+      speakNow(item.text, item.lang, rate, item.ind, loops, tryUrl); return "voice";
     }
-    if(item.url){
-      playUrl(item.url, item.mode === "slow" ? 0.6 : 1, item.ind, loops); return "file";
-    }
-    // Embedded base64 clip — plays INLINE on ANY device (incl. PCs with no voice
-    // for this language) and works offline. Covers every greeting + variant.
-    const tts = item.text && TTS_AUDIO[item.text];
-    if(tts){
-      playUrl(tts, item.mode === "slow" ? 0.7 : 1, item.ind, loops); return "embedded";
-    }
-    // Last resort (shouldn't normally happen now): open Forvo, reusing one named tab.
-    if(item.allowForvo && item.text){
-      window.open(forvoFor(item.text), "sayItRightForvo");
-      return "forvo";
-    }
-    return "none";
+    return tryUrl();
   }
 
   // ---- registries refreshed when voices load late ----
   const forvoEntries = [];   // { g, el }
-  let renderDiag = function(){};
   function refreshAudioAvailability(){
     forvoEntries.forEach(({g, el}) => { el.hidden = tierFor(g) !== "forvo"; });
-    renderDiag();
   }
 
   // ---- press gestures: tap = play, long-press = slow, double-tap = loop ----
@@ -1377,52 +1361,7 @@ const TTS_AUDIO = {
   // stop any speech when leaving the page (tidy on mobile)
   window.addEventListener("pagehide", ()=>{ stopAll(); });
 
-  // ---------- Audio diagnostics (for the team) ----------
-  (function buildDiagnostics(){
-    const body = $("#diag-body");
-    if(!body) return;
-    const mains = GAME.greetings.filter(g => !g.isCountry);
-    const TIER_LABEL = { voice:"Tier 1 · device voice", file:"Tier 2 · Wikimedia clip", embedded:"Built-in clip (offline)", forvo:"Tier 3 · Forvo link", none:"—" };
-
-    const testBtn = el("button","btn ghost",`<span aria-hidden="true">▶</span> Test all audio`);
-    testBtn.type = "button";
-    let testing = false;
-    testBtn.addEventListener("click", () => {
-      if(testing){ stopAll(); testing = false; testBtn.innerHTML = `<span aria-hidden="true">▶</span> Test all audio`; return; }
-      testing = true; testBtn.innerHTML = `<span aria-hidden="true">■</span> Stop test`;
-      let i = 0;
-      (function next(){
-        if(!testing || i >= mains.length){ testing = false; testBtn.innerHTML = `<span aria-hidden="true">▶</span> Test all audio`; return; }
-        const g = mains[i++];
-        playAudio({ text:g.nativeScript, lang:g.speechLang, url:g.audioFallback, ind:null, mode:"play" });
-        setTimeout(next, 2200);
-      })();
-    });
-
-    renderDiag = function(){
-      const rows = mains.map(g => {
-        const tier = tierFor(g);
-        const v = findVoice(g.speechLang);
-        const src = tier === "voice" ? ((v && v.name) ? v.name + " (" + v.lang + ")" : g.speechLang)
-                  : tier === "file" ? (g.audioFallbackCredit || g.audioFallback)
-                  : tier === "embedded" ? "Built-in base64 MP3 (gTTS) — plays offline"
-                  : tier === "forvo" ? forvoUrl(g.nativeScript) : "—";
-        return `<tr><td>${g.flag || ""} ${g.language}</td><td class="tier ${tier}">${TIER_LABEL[tier]}</td><td class="muted">${esc(src)}</td></tr>`;
-      }).join("");
-      const voiceList = VOICES.length
-        ? VOICES.map(v => `${esc(v.name)} <span class="muted">(${esc(v.lang)})</span>`).join("<br>")
-        : `<span class="muted">No voices reported yet${speechOK ? " — they may still be loading; reopen this panel in a moment." : " — speechSynthesis is unavailable on this browser."}</span>`;
-      body.innerHTML = `
-        <p class="muted">Peers can ignore this. For the team: open it on each showcase phone to confirm every greeting plays. Audio falls back automatically: device voice → recorded clip → built-in offline clip. Every greeting + variant has a built-in clip, so they play inline even with no language voice installed.</p>
-        <table><thead><tr><th>Greeting</th><th>Will use</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table>
-        <p><strong>${VOICES.length}</strong> speech voice(s) on this browser:</p>
-        <div class="voices">${voiceList}</div>`;
-      body.appendChild(testBtn);
-    };
-    renderDiag();
-  })();
-
-  // set initial Forvo visibility + diagnostics, then again whenever voices load
+  // set initial Forvo visibility (re-checked whenever voices load late)
   refreshAudioAvailability();
 
   // ---------- scroll reveal ----------

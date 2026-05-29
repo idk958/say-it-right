@@ -29,7 +29,7 @@ Tap **🔊 Play** and the app finds its own sound, automatically — you never c
 2. **A verified Wikimedia Commons clip** for the five headline words (real human recordings).
 3. **A built-in embedded clip** (base64 MP3, generated with gTTS) for every greeting *and* every "good morning/afternoon/evening" variant. This is what makes it **play inline on a PC or older phone that has no voice for the language** — and it works **offline**, since the audio is inside the HTML file.
 
-The upshot: **every 🔊 button plays inline on every device**, including a Windows PC with only English voices. No new tabs, no setup. Open the **🔧 Audio diagnostics** panel at the bottom of the page to see which source each greeting is using and hit **Test all audio**.
+The upshot: **every 🔊 button plays inline on every device**, including a Windows PC with only English voices. No new tabs, no setup. Each button cascades automatically — if the device voice is missing **or installed but silent** (a known quirk for some Hindi and cloud voices), it falls through to the recorded clip, then the built-in offline clip, so a tap is never silent.
 
 > If you change the greetings and want to regenerate the embedded audio, run `python generate-tts.py` (needs `pip install gTTS` and internet — it re-synthesizes every phrase and re-injects the clips). You don't need to do this unless you edit the words.
 
@@ -55,7 +55,7 @@ Working, embeddable starter videos are **already baked in** so the page is compl
 **APA citation** (required for any external source — videos and audio): list every clip you keep, e.g.
 > Easy Languages. (2023, March 15). *Easy Mandarin 1 – Ni hao* [Video]. YouTube. https://youtube.com/watch?v=...
 >
-> Wikimedia Commons audio credits are shown in the app's 🔧 Audio diagnostics panel.
+> Wikimedia Commons audio credits live in each greeting's `audioFallbackCredit` field in the HTML.
 
 ---
 
@@ -102,7 +102,7 @@ Make a QR code of the final URL (search "free QR code generator") and put it on 
 ## What's inside (for your write-up)
 
 - **5 greetings** — Mandarin, Thai, Japanese, Hindi, Arabic — each with native script, phonetics, meaning, three audio speeds, **two videos** (pronunciation + gesture), time-of-day variants (each with its own play button), an inline gesture illustration, and a cultural note.
-- **Three-tier audio** — device voice → verified Wikimedia Commons clip → Forvo link — so a greeting plays even on devices missing the language voice. A **🔧 Audio diagnostics** panel lets the team confirm playback on each showcase phone.
+- **Cascading audio** — device voice → verified Wikimedia Commons clip → built-in offline clip → Forvo link. Each step only fires if the previous one fails to make sound (including a voice that's installed but silent), so a greeting plays on any device.
 - **An On Country card** — Warami (Dharug) — the most local greeting, framed for the assessment's global-citizenship lens. Deliberately **machine-audio-free and video-free** — an Indigenous greeting should be heard from a person, not a synthesiser — and it points to the **50 Words Project**, with a reminder to confirm protocol with Walanga Muru.
 - **Try It Yourself** — a 60-second pairing timer that switches partners at the 30-second mark with a soft chime, fully driven by the browser (no audio files).
 - **The Stakes** — the micro (mispronounced names; Kohli & Solórzano, 2012) and macro (HSBC's "Assume Nothing") cases, side by side.
