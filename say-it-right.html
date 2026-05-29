@@ -399,25 +399,6 @@ a{ color:var(--accent-deep); }
 .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 
 /* =========================================================
-   THE STAKES
-   ========================================================= */
-.stakes-grid{ display:grid; grid-template-columns:1fr; gap:18px; }
-@media (min-width:760px){ .stakes-grid{ grid-template-columns:1fr 1fr; } }
-.stake{
-  background:var(--cream-card); border:1px solid #ecd3b0; border-radius:var(--radius);
-  padding:24px; box-shadow:var(--shadow-sm); position:relative;
-}
-.stake .tag{
-  display:inline-block; font-size:.7rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
-  padding:5px 11px; border-radius:999px; margin-bottom:12px;
-}
-.stake.micro .tag{ background:#ffe1d0; color:var(--accent-deep); }
-.stake.macro .tag{ background:#dcefe2; color:var(--mint-deep); }
-.stake p{ margin:0; font-size:1.06rem; line-height:1.55; }
-.stake cite{ display:block; margin-top:10px; font-size:.82rem; color:var(--ink-muted); font-style:normal; }
-.stakes-tie{ text-align:center; font-family:var(--serif); font-style:italic; font-size:1.25rem; color:var(--charcoal); margin:24px auto 0; max-width:34ch; }
-
-/* =========================================================
    FOOTER
    ========================================================= */
 footer{ margin-top:30px; background:var(--charcoal); color:#f6e7d3; padding:44px 0 30px; }
@@ -426,14 +407,6 @@ footer .closer{ font-family:var(--serif); font-size:1.5rem; color:var(--gold); m
 footer .credit-chip{
   display:inline-block; background:#4c3a2b; padding:9px 18px; border-radius:999px;
   font-size:.9rem; color:#f6e7d3; margin-bottom:18px;
-}
-footer .fb a{ color:var(--gold); font-weight:600; }
-footer .refs{ font-size:.74rem; color:#bba98f; line-height:1.6; max-width:62ch; margin:22px auto 0; text-align:left; }
-footer .refs h3{ font-family:var(--sans); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:#d9c3a3; margin:0 0 6px; }
-footer .refs a{ color:#e0c79f; word-break:break-word; }
-footer .aoc{
-  margin-top:24px; padding-top:18px; border-top:1px solid #5a4636;
-  font-size:.86rem; color:#d9c3a3; font-style:italic; max-width:54ch; margin-inline:auto;
 }
 
 /* two video tiles (pronunciation + gesture) */
@@ -528,16 +501,6 @@ footer .aoc{
       <p class="sr-only" id="liveRegion" role="status" aria-live="assertive"></p>
     </div>
   </section>
-
-  <!-- 4. THE STAKES -->
-  <section class="section wrap" aria-labelledby="stakes-h">
-    <div class="section-head reveal">
-      <h2 id="stakes-h">Same skill. Different scale.</h2>
-      <p id="stakes-sub"></p>
-    </div>
-    <div class="stakes-grid" id="stakes"></div>
-    <p class="stakes-tie reveal" id="stakes-tie"></p>
-  </section>
 </main>
 
 <!-- 5. FOOTER -->
@@ -545,13 +508,6 @@ footer .aoc{
   <div class="wrap">
     <p class="closer" id="footer-closer"></p>
     <p><span class="credit-chip" id="footer-credit"></span></p>
-    <p class="fb"><a id="feedback-link" href="#">&#128229; Send us feedback</a></p>
-    <div class="refs">
-      <h3>Sources</h3>
-      <p id="ref-1"></p>
-      <p id="ref-2"></p>
-    </div>
-    <p class="aoc" id="aoc"></p>
   </div>
 </footer>
 
@@ -573,34 +529,9 @@ const GAME = {
     trySub: "Pair up. 30 seconds each. Greet, then swap.",
     tryHint: "Press start, greet your partner, and switch when the chime sounds.",
     donePrompt: "How did it go? Try a different greeting →",
-    stakesSub: "Why a greeting is never just a greeting.",
-    stakesTie: "Same skill. Same stakes. Just different scale.",
     footerCloser: "Small efforts matter.",
-    footerCredit: "Made by [team name placeholder] · MQBS2010",
-    feedbackEmail: "your-team-email@students.mq.edu.au",   // <- team replaces
-    feedbackSubject: "Feedback on Say It Right",
-    aoc: "We acknowledge the Wallumattagal people of the Dharug Nation, the Traditional Custodians of the land on which Macquarie University stands, and pay respect to Elders past and present."
+    footerCredit: "Made by [team name placeholder] · MQBS2010"
   },
-
-  // ---- APA citations (team: verify + add your video sources here) ----
-  references: {
-    micro: "Kohli, R., & Solórzano, D. G. (2012). Teachers, please learn our names!: Racial microaggressions and the K–12 classroom. Race Ethnicity and Education, 15(4), 441–462. https://doi.org/10.1080/13613324.2012.674026",
-    macro: "HSBC. (2009). HSBC drops “Assume Nothing” tagline after costly mistranslation [Widely reported; confirm a specific outlet for your reference list, e.g. The Financial Brand, 2009]."
-  },
-
-  // ---- The Stakes section ----
-  stakes: [
-    {
-      kind: "micro", tag: "Micro",
-      text: "A UCLA study found students whose teachers mispronounced their names often hid their language, culture, and family — first at school, then at work.",
-      cite: "Kohli & Solórzano, 2012"
-    },
-    {
-      kind: "macro", tag: "Macro",
-      text: "HSBC’s slogan “Assume Nothing” was translated as “Do Nothing” in several markets. The 2009 rebrand to fix it cost an estimated US$10 million.",
-      cite: "HSBC rebrand, 2009"
-    }
-  ],
 
   // =======================================================
   // THE GREETINGS  (paste YouTube IDs into videoEmbed)
@@ -860,16 +791,8 @@ const TTS_AUDIO = {
   $("#try-sub").textContent     = C.trySub;
   $("#try-hint").textContent    = C.tryHint;
   $("#doneLink").textContent    = C.donePrompt;
-  $("#stakes-sub").textContent  = C.stakesSub;
-  $("#stakes-tie").textContent  = C.stakesTie;
   $("#footer-closer").textContent = C.footerCloser;
   $("#footer-credit").textContent = C.footerCredit;
-  $("#aoc").textContent         = C.aoc;
-  $("#ref-1").textContent       = GAME.references.micro;
-  $("#ref-2").textContent       = GAME.references.macro;
-
-  const fb = $("#feedback-link");
-  fb.href = "mailto:" + C.feedbackEmail + "?subject=" + encodeURIComponent(C.feedbackSubject);
 
   // hero illustration trio
   $("#hero-illo").innerHTML = illoFor("thai") + illoFor("hindi") + illoFor("japanese");
@@ -1282,14 +1205,6 @@ const TTS_AUDIO = {
   }
 
   function scriptLang(g){ return g.speechLang ? g.speechLang.split("-")[0] : "en"; }
-
-  // ---------- Stakes ----------
-  const stakesEl = $("#stakes");
-  GAME.stakes.forEach(s => {
-    const d = el("div","stake "+s.kind);
-    d.innerHTML = `<span class="tag">${s.tag}</span><p>${s.text}</p><cite>${s.cite}</cite>`;
-    stakesEl.appendChild(d);
-  });
 
   // ---------- Try It Yourself timer ----------
   const TOTAL = 60, SWITCH = 30;

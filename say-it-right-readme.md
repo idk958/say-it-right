@@ -66,14 +66,11 @@ Everything editable lives in one place: the `GAME = { ... }` object near the top
 | Want to change… | Edit this in `GAME` |
 |---|---|
 | Team name | `copy.teamChip` and `copy.footerCredit` |
-| Feedback email | `copy.feedbackEmail` |
 | Any on-screen wording | the `copy` object |
 | A greeting's text, phonetic, gesture, note | the matching entry in `greetings` |
 | Pronunciation video | `videoEmbed` (paste the YouTube ID) |
 | Gesture video | `gestureVideoEmbed` (paste the YouTube ID) |
 | Fallback audio clip | `audioFallback` (a direct Wikimedia upload URL) |
-| The two "Stakes" examples | the `stakes` array |
-| Source citations | the `references` object |
 
 Each greeting object has the same shape, so a teammate can add or reorder greetings without breaking anything. The `speechLang` field (e.g. `"zh-CN"`, `"ja-JP"`) tells the phone which voice to use — leave it as-is.
 
@@ -105,5 +102,4 @@ Make a QR code of the final URL (search "free QR code generator") and put it on 
 - **Cascading audio** — device voice → verified Wikimedia Commons clip → built-in offline clip → Forvo link. Each step only fires if the previous one fails to make sound (including a voice that's installed but silent), so a greeting plays on any device.
 - **An On Country card** — Warami (Dharug) — the most local greeting, framed for the assessment's global-citizenship lens. Deliberately **machine-audio-free and video-free** — an Indigenous greeting should be heard from a person, not a synthesiser — and it points to the **50 Words Project**, with a reminder to confirm protocol with Walanga Muru.
 - **Try It Yourself** — a 60-second pairing timer that switches partners at the 30-second mark with a soft chime, fully driven by the browser (no audio files).
-- **The Stakes** — the micro (mispronounced names; Kohli & Solórzano, 2012) and macro (HSBC's "Assume Nothing") cases, side by side.
 - **Built for phones** — single file, no tracking, no accounts. Accessible: AA-contrast colours, full keyboard support, ≥44 px tap targets, screen-reader announcements on the timer, and reduced-motion support.
