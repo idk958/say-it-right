@@ -346,9 +346,14 @@ a{ color:var(--accent-deep); }
   padding:18px 14px; text-align:center; box-shadow:var(--shadow-sm);
 }
 .gphoto-illo svg{ width:150px; height:150px; }
+.gphoto-img{
+  display:block; width:100%; max-height:260px; object-fit:cover;
+  border-radius:var(--radius-sm); background:#eee;
+}
 .gphoto figcaption{
   margin-top:8px; font-family:var(--sans); font-weight:700; font-size:.9rem; color:var(--accent-deep);
 }
+.gphoto-credit{ display:block; margin-top:2px; font-weight:400; font-size:.72rem; color:var(--ink-muted); }
 .gesture-detail{ background:var(--cream-sink); border-radius:var(--radius-sm); padding:14px; }
 .gesture-detail h4{ margin:0 0 4px; font-family:var(--sans); font-size:.95rem; color:var(--accent-deep); }
 .gesture-detail p{ margin:0; font-size:.92rem; color:var(--charcoal); }
@@ -572,6 +577,8 @@ const GAME = {
         description: "No bow. Eye contact is normal. A small nod or a Western-style handshake works in most professional settings."
       },
       culturalNote: "Mandarin uses four tones — the same syllable can mean four different things depending on pitch. Don’t aim for perfect; locals appreciate the effort.",
+      gesturePhoto: "https://commons.wikimedia.org/wiki/Special:FilePath/Tsai_Ing-wen_greeting_with_the_fist-and-palm_gesture_20200305.jpg?width=900",
+      gesturePhotoCredit: "Photo: Wikimedia Commons",
     },
     {
       id: "thai",
@@ -593,6 +600,8 @@ const GAME = {
         description: "Hands pressed together at the chest with a slight head bow. The higher the hands, the more respect — raise them for monks, elders, and teachers."
       },
       culturalNote: "Add a politeness particle: krap if you’re male, ka if you’re female. The wai matters most at first meetings — skipping it can read as cold.",
+      gesturePhoto: "https://commons.wikimedia.org/wiki/Special:FilePath/Thai_wai.jpg?width=900",
+      gesturePhotoCredit: "Photo: Wikimedia Commons",
     },
     {
       id: "japanese",
@@ -614,6 +623,8 @@ const GAME = {
         description: "15° for a casual greeting, 30° to show respect, 45° for a deep apology or thanks. Eye contact during the bow varies by context."
       },
       culturalNote: "A bow can replace a handshake entirely. Bowing while shaking hands looks awkward, so pick one — don’t try to do both.",
+      gesturePhoto: "https://commons.wikimedia.org/wiki/Special:FilePath/Ojigi_2016-05-15.jpg?width=900",
+      gesturePhotoCredit: "Photo: Wikimedia Commons",
     },
     {
       id: "french",
@@ -634,7 +645,9 @@ const GAME = {
         name: "La bise or a handshake",
         description: "Among friends, a light cheek-to-cheek kiss — usually two, starting on the left cheek. In professional or first meetings, a firm but brief handshake is the safe choice."
       },
-      culturalNote: "Always open with “Bonjour” before anything else — walking into a shop or asking a question without it can read as rude. Switch to “Bonsoir” once evening sets in."
+      culturalNote: "Always open with “Bonjour” before anything else — walking into a shop or asking a question without it can read as rude. Switch to “Bonsoir” once evening sets in.",
+      gesturePhoto: "https://commons.wikimedia.org/wiki/Special:FilePath/Female_civilian_and_male_serviceman_shaking_hands._MOD_45159433.jpg?width=900",
+      gesturePhotoCredit: "Photo: Wikimedia Commons"
     },
     {
       id: "arabic",
@@ -656,6 +669,8 @@ const GAME = {
         description: "After a handshake, place your right hand over your heart to show sincerity and warmth. Use the right hand only."
       },
       culturalNote: "The reply matters — answer with “Wa ʿalaykum as-salām.” Without it, the greeting feels incomplete. Arabic doesn’t strongly split afternoon and evening.",
+      gesturePhoto: "https://commons.wikimedia.org/wiki/Special:FilePath/Dmitry_Medvedev_and_Mohammed_bin_Rashid_Al_Maktoum_March_2009.jpg?width=900",
+      gesturePhotoCredit: "Photo: Wikimedia Commons"
     }
   ]
 };
@@ -1053,11 +1068,17 @@ const TTS_AUDIO = {
 
     const left = el("div");
     const gpic = el("div","gesture-photo");
+    // real photo of the gesture; falls back to the hand-drawn illustration if it can't load
+    const media = g.gesturePhoto
+      ? `<img class="gphoto-img" src="${esc(g.gesturePhoto)}" alt="${esc(g.gesture.name)} — ${esc(g.language)} greeting" loading="lazy"
+            onerror="this.closest('.gphoto').querySelector('.gphoto-illo').hidden=false; this.remove();">
+         <div class="gphoto-illo" hidden>${illoFor(g.id)}</div>`
+      : `<div class="gphoto-illo">${illoFor(g.id)}</div>`;
     gpic.innerHTML = `
       <p class="subhead"><span aria-hidden="true">🙏</span> See the gesture</p>
       <figure class="gphoto">
-        <div class="gphoto-illo">${illoFor(g.id)}</div>
-        <figcaption>${g.gesture.name}</figcaption>
+        ${media}
+        <figcaption>${g.gesture.name}${g.gesturePhoto ? `<span class="gphoto-credit">${esc(g.gesturePhotoCredit || "")}</span>` : ""}</figcaption>
       </figure>`;
     left.appendChild(gpic);
     left.appendChild(timeOfDay(g, ind));
