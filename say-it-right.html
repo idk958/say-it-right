@@ -515,7 +515,7 @@ footer .credit-chip{
       <div class="progress" aria-hidden="true"><span id="bar"></span></div>
       <p class="hint" id="try-hint"></p>
       <div class="controls">
-        <button class="btn" id="startBtn" type="button">Start 60 seconds</button>
+        <button class="btn" id="startBtn" type="button">Start 120 seconds</button>
         <button class="btn ghost" id="resetBtn" type="button" hidden>Reset</button>
       </div>
       <p class="done-prompt" id="donePrompt" hidden>
@@ -549,7 +549,7 @@ const GAME = {
     lead: "Tap a greeting. Listen. Watch. Try.",
     teamChip: "",
     cardsSub: "Tap any card to open it. Hear it, watch it, then say it.",
-    trySub: "Pair up. 30 seconds each. Greet, then swap.",
+    trySub: "Pair up. 60 seconds each. Greet, then swap.",
     tryHint: "Press start, greet your partner, and switch when the chime sounds.",
     donePrompt: "How did it go? Try a different greeting →",
     footerCloser: "Small efforts matter.",
@@ -1188,7 +1188,7 @@ const TTS_AUDIO = {
   function scriptLang(g){ return g.speechLang ? g.speechLang.split("-")[0] : "en"; }
 
   // ---------- Try It Yourself timer ----------
-  const TOTAL = 60, SWITCH = 30;
+  const TOTAL = 120, SWITCH = 60;
   let remaining = TOTAL, ticking = null, audioCtx = null;
   const phaseEl = $("#phase"), clockEl = $("#clock"), barEl = $("#bar");
   const startBtn = $("#startBtn"), resetBtn = $("#resetBtn");
@@ -1245,7 +1245,7 @@ const TTS_AUDIO = {
     if(ticking){ clearInterval(ticking); ticking = null; }
     remaining = TOTAL; render();
     phaseEl.textContent = "Ready when you are";
-    startBtn.hidden = false; startBtn.textContent = "Start 60 seconds";
+    startBtn.hidden = false; startBtn.textContent = "Start 120 seconds";
     resetBtn.hidden = true;
     donePrompt.classList.remove("on"); donePrompt.hidden = true;
     announce("Timer reset.");
