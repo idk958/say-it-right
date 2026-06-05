@@ -232,10 +232,11 @@ a{ color:var(--accent-deep); }
 @keyframes bob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(6px);} }
 @media (prefers-reduced-motion: reduce){ .hero .scroll-hint .arrow{ animation:none; } }
 
-/* small illustrated greeting trio under hero */
-.hero-illo{ margin:26px auto 0; display:flex; justify-content:center; gap:6px; max-width:340px; }
-.hero-illo svg{ width:88px; height:88px; }
-.hero-illo svg:nth-child(2){ transform:translateY(-10px) scale(1.08); }
+/* small illustrated greeting figures under hero — one per culture */
+.hero-illo{ margin:26px auto 0; display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-end; gap:4px; max-width:520px; }
+.hero-illo svg{ width:78px; height:78px; }
+.hero-illo svg:nth-child(3){ transform:translateY(-10px) scale(1.08); }
+@media (max-width:480px){ .hero-illo svg{ width:60px; height:60px; } }
 
 /* =========================================================
    SECTION HEADINGS
@@ -542,17 +543,17 @@ footer .credit-chip{
 const GAME = {
 
   copy: {
-    kicker: "MQBS2010 · Say It Right",
+    kicker: "Say It Right",
     title: "Say It Right",
     subtitle: "Small greetings, big respect.",
     lead: "Tap a greeting. Listen. Watch. Try.",
-    teamChip: "From the Say It Right team — [team name placeholder]",
+    teamChip: "",
     cardsSub: "Tap any card to open it. Hear it, watch it, then say it.",
     trySub: "Pair up. 30 seconds each. Greet, then swap.",
     tryHint: "Press start, greet your partner, and switch when the chime sounds.",
     donePrompt: "How did it go? Try a different greeting →",
     footerCloser: "Small efforts matter.",
-    footerCredit: "Made by [team name placeholder] · MQBS2010"
+    footerCredit: "Say It Right"
   },
 
   // =======================================================
@@ -795,7 +796,7 @@ const TTS_AUDIO = {
   $("#hero-title").textContent  = C.title;
   $("#hero-sub").textContent    = C.subtitle;
   $("#hero-lead").textContent   = C.lead;
-  $("#team-chip").textContent   = C.teamChip;
+  { const tc = $("#team-chip"); if(C.teamChip){ tc.textContent = C.teamChip; } else { tc.hidden = true; } }
   $("#cards-sub").textContent   = C.cardsSub;
   $("#try-sub").textContent     = C.trySub;
   $("#try-hint").textContent    = C.tryHint;
@@ -804,7 +805,7 @@ const TTS_AUDIO = {
   $("#footer-credit").textContent = C.footerCredit;
 
   // hero illustration trio
-  $("#hero-illo").innerHTML = illoFor("thai") + illoFor("french") + illoFor("japanese");
+  $("#hero-illo").innerHTML = illoFor("mandarin") + illoFor("thai") + illoFor("japanese") + illoFor("french") + illoFor("arabic");
 
   // ===========================================================
   // AUDIO ENGINE  —  three tiers: Web Speech -> Wikimedia -> Forvo
